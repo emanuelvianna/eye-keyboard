@@ -23,11 +23,11 @@ class EyeTracker(object):
 
         self.settings = {
             'pupilcol': (0, 0, 0),
-            'threshold': 100,
+            'threshold': 45,
             'nonthresholdcol': (100, 100, 255, 255),
             'pupilpos': (-1, -1),
             'pupilrect': pygame.Rect(
-                self.camera_size[0] / 2 - 50, self.camera_size[1] / 2 - 25, 100, 50),
+                self.camera_size[0] / 8 - 50, self.camera_size[1] / 8 - 25, 25, 12),
             'pupilbounds': [0, 0, 0, 0],
             '': None
         }

@@ -54,8 +54,9 @@ def _init_fonts():
 
 
 def _init_display(display_size):
-    disp = pygame.display.set_mode(display_size, pygame.FULLSCREEN |
-                                   pygame.HWSURFACE | pygame.DOUBLEBUF)
+    disp = pygame.display.set_mode(display_size, pygame.RESIZABLE)
+    # disp = pygame.display.set_mode(display_size, pygame.FULLSCREEN |
+    #                                pygame.HWSURFACE | pygame.DOUBLEBUF)
     disp.fill(BACKGROUND_COLOUR)
     return disp
 
@@ -158,7 +159,7 @@ def _run_gui(disp, btn, font, img, tracker, sfont, display_size, camera_size):
     stagevars[0]['use_prect'] = True
     stagevars[1]['thresholdchange'] = None
     stagevars[2]['clickpos'] = 0, 0
-    stagevars[2]['prectsize'] = 100, 50
+    stagevars[2]['prectsize'] = 25, 12
     stagevars[2]['prect'] = pygame.Rect(
         stagevars[2]['clickpos'][0],
         stagevars[2]['clickpos'][1],
