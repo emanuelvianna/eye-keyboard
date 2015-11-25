@@ -1,7 +1,7 @@
 # eye-keyboard
 Extending webcam-eyetracker for use a keyboard with pupils
 
-# Purpose
+## Purpose
 
 A family friend suffered a cerebral vascular accident which paralyzed her body movements. She can communicate through a table given to her at the hospital like this:
 
@@ -16,4 +16,4 @@ The idea of this software was to automate the assistant task. It relies on [webc
 
 I've recorded a video to ilustrate how it works:
 
-![http://img.youtube.com/vi/vG-_wg6IxnY/default.jpg](https://youtu.be/vG-_wg6IxnY)
+[![Example](http://img.youtube.com/vi/vG-_wg6IxnY/0.jpg)](https://youtu.be/vG-_wg6IxnY)
