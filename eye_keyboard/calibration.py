@@ -54,9 +54,9 @@ def _init_fonts():
 
 
 def _init_display(display_size):
-    disp = pygame.display.set_mode(display_size, pygame.RESIZABLE)
-    # disp = pygame.display.set_mode(display_size, pygame.FULLSCREEN |
-    #                                pygame.HWSURFACE | pygame.DOUBLEBUF)
+    # disp = pygame.display.set_mode(display_size, pygame.RESIZABLE)
+    disp = pygame.display.set_mode(display_size, pygame.FULLSCREEN |
+                                   pygame.HWSURFACE | pygame.DOUBLEBUF)
     disp.fill(BACKGROUND_COLOUR)
     return disp
 

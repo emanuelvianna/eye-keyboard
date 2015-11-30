@@ -8,10 +8,11 @@ from collections import defaultdict
 
 BACKGROUND_COLOUR = (0, 0, 0)
 THINK_TIME = 2.0
+ROW_THINK_TIME = 1.0
 SPEECH_SPEED = 44100
 INTERMEDIATE = 210
 NUM_ROWS = 3
-NUM_COLS = 9
+NUM_COLS = 10
 STATES = {
     0: [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8],
     1: [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8],
@@ -59,9 +60,9 @@ def _init_fonts():
 
 
 def _init_display(display_size):
-    # disp = pygame.display.set_mode(display_size, pygame.FULLSCREEN |
-    #                                pygame.HWSURFACE | pygame.DOUBLEBUF)
-    disp = pygame.display.set_mode(display_size, pygame.RESIZABLE)
+    disp = pygame.display.set_mode(display_size, pygame.FULLSCREEN |
+                                   pygame.HWSURFACE | pygame.DOUBLEBUF)
+    # disp = pygame.display.set_mode(display_size, pygame.RESIZABLE)
     disp.fill(BACKGROUND_COLOUR)
     return disp
 
@@ -110,32 +111,46 @@ def _run_gui(snd, tracker, font, disp, kb_imgs):
     phrase = ""
     cnt, sum_pupil_y = 0, 0
     start = time()
+    start_row = None
     while True:
         if _check_escape():
             break
         if (time() - start) > THINK_TIME:
-            avg_pupil_y = sum_pupil_y / cnt
-            answer = avg_pupil_y < intermediate[1]
-            if col == -1:
-                if answer is True:
-                    col = 0
+            if start_row is None:
+                avg_pupil_y = sum_pupil_y / cnt
+                answer = avg_pupil_y < intermediate[1]
+                if col == -1:
+                    if answer is True:
+                        col = 0
+                        start_row = time()
+                    else:
+                        row = (row + 1) % NUM_ROWS
                 else:
-                    row = (row + 1) % NUM_ROWS
+                    if answer is True:
+                        phrase += LETTER[row][col]
+                        row, col = 0, -1
+                    else:
+                        col += 1
+                        if (col + 1) == NUM_COLS:
+                            col = -1
+            if start_row is not None:
+                if (time() - start_row) > ROW_THINK_TIME:
+                    start_row = None
+                    pygame.mixer.music.load(snd[row][col])
+                    pygame.mixer.music.play()
+                    disp.blit(kb_imgs[row][col], (100, 250))
+                    surf = font.render(phrase, True, (255, 255, 255))
+                    disp.blit(surf, (110, 610))
+                    cnt, sum_pupil_y = 0, 0
+                    start = time()
             else:
-                if answer is True:
-                    phrase += LETTER[row][col]
-                    row, col = 0, -1
-                else:
-                    col += 1
-                    if (col + 1) == NUM_COLS:
-                        col = -1
-            cnt, sum_pupil_y = 0, 0
-            start = time()
-            pygame.mixer.music.load(snd[row][col])
-            pygame.mixer.music.play()
-            disp.blit(kb_imgs[row][col], (100, 250))
-            surf = font.render(phrase, True, (255, 255, 255))
-            disp.blit(surf, (110, 610))
+                pygame.mixer.music.load(snd[row][col])
+                pygame.mixer.music.play()
+                disp.blit(kb_imgs[row][col], (100, 250))
+                surf = font.render(phrase, True, (255, 255, 255))
+                disp.blit(surf, (110, 610))
+                cnt, sum_pupil_y = 0, 0
+                start = time()
         img, thresholded, pupilpos, pupilsize, pupilbounds = tracker.give_me_all(pupilrect=True)
         sum_pupil_y += pupilpos[1]
         cnt += 1
@@ -146,7 +161,8 @@ def _run_gui(snd, tracker, font, disp, kb_imgs):
         crop.blit(img, (0, 0), blitpos)
         scale = pygame.transform.scale(crop, (500, 1000))
         disp.blit(scale, (800, 50))
-        disp.blit(kb_imgs[row][col], (100, 250))
+        if start_row is None:
+            disp.blit(kb_imgs[row][col], (100, 250))
         pygame.display.flip()
 
 
