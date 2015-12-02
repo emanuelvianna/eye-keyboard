@@ -15,8 +15,8 @@ I've recorded a video to ilustrate how it works:
 
 [![Example](http://img.youtube.com/vi/vG-_wg6IxnY/0.jpg)](https://youtu.be/vG-_wg6IxnY)
 
-We've made a first test with my family friend last week and the mechanism worked:
+We've made a first test with my family friend last week and the mechanism worked very well as shown below. We are now adjusting the keyboard layout and the duration of some time interavals to be more confortable·
 
 [![InitialTest](http://img.youtube.com/vi/GCCLfgFJNNU/0.jpg)](https://www.youtube.com/watch?v=GCCLfgFJNNU)
 
-We are now adjusting the keyboard layout and the duration of some time interavals to be more confortable·
+
