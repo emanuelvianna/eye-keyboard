@@ -15,11 +15,9 @@ class EyeTracker(object):  # PUPIL TRACKER
         self._init_camera_size_treating_os_compatibilities(camera_size)
 
         self.settings = {
-            'nonthresholdcol': (100, 100, 255, 255),
             'pupilrect': pygame.Rect(
                 self.camera_size[0] / 8 - 50, self.camera_size[1] / 8 - 25, 25, 12),
-            'pupilbounds': [0, 0, 0, 0],
-            '': None
+            'pupilbounds': [0, 0, 0, 0]
         }
 
     def _init_camera(self, camera_size):
@@ -42,7 +40,7 @@ class EyeTracker(object):  # PUPIL TRACKER
         thresholded = pygame.surface.Surface(self.camera_size, 0, snapshot)
         th = (self.threshold, self.threshold, self.threshold)
         pygame.transform.threshold(
-            thresholded, snapshot, st.PUPIL_COLOUR, th, self.settings['nonthresholdcol'], 1)
+            thresholded, snapshot, st.PUPIL_COLOUR, th, st.THRESHOLD_BACKGROUND_COLOUR, 1)
         pupilsize, pupilbounds = self._find_pupil(thresholded, pupilrect)
         return snapshot, thresholded, pupilsize, pupilbounds
 
