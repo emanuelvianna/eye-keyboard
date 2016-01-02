@@ -8,12 +8,12 @@ class EyeTracker(object):
 
     def __init__(self, camera_size):
         self.camera = None
+        self.threshold = st.DEFAULT_THRESHOLD
 
         self._init_camera(camera_size)
         self._init_camera_size_treating_os_compatibilities(camera_size)
 
         self.settings = {
-            'threshold': 45,
             'nonthresholdcol': (100, 100, 255, 255),
             'pupilpos': (-1, -1),
             'pupilrect': pygame.Rect(
@@ -40,7 +40,7 @@ class EyeTracker(object):
     def give_me_all(self, pupilrect=False):
         snapshot = self.camera.get_image()
         thresholded = pygame.surface.Surface(self.camera_size, 0, snapshot)
-        th = (self.settings['threshold'], self.settings['threshold'], self.settings['threshold'])
+        th = (self.threshold, self.threshold, self.threshold)
         pygame.transform.threshold(
             thresholded, snapshot, st.PUPIL_COLOUR, th, self.settings['nonthresholdcol'], 1)
         pupilpos, pupilsize, pupilbounds = self._find_pupil(thresholded, pupilrect)
@@ -59,7 +59,7 @@ class EyeTracker(object):
                 rectbounds.bottom = self.camera_size[1]
             thresholded = thresholded.subsurface(rectbounds)
             ox, oy = thresholded.get_offset()
-        th = (self.settings['threshold'], self.settings['threshold'], self.settings['threshold'])
+        th = (self.threshold, self.threshold, self.threshold)
         mask = pygame.mask.from_threshold(thresholded, st.PUPIL_COLOUR, th)
         pupil = mask.connected_component()
         pupilcenter = pupil.centroid()

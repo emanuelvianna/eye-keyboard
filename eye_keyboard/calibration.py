@@ -181,7 +181,7 @@ def _run_gui(disp, btn, font, img, tracker, sfont, display_size, camera_size):
         inp, inptype = _capture_input()
         stage, stagevars = _handle_input(btn, inptype, inp, stage, stagevars)
         if stage == 1:
-            _handle_threshold(settings, stagevars)
+            _handle_threshold(tracker, settings, stagevars)
         elif stage == 2:
             if inptype == 'mouseclick':
                 _place_rectangle_at_click_position(blitpos, img_size, stagevars, inp, settings)
@@ -189,12 +189,12 @@ def _run_gui(disp, btn, font, img, tracker, sfont, display_size, camera_size):
                 _update_rectangle_size(stagevars, settings)
             _draw_red_rectangle(img, settings['pupilrect'], thresholded)
         elif stage == 3:
-            _handle_threshold(settings, stagevars)
+            _handle_threshold(tracker, settings, stagevars)
             _draw_red_rectangle(img, pupilbounds, thresholded)
             _draw_pupil_circle(img, thresholded, pupilpos)
             if stagevars[3]['confirmed']:
                 running = False
-        _draw_legend(display_size, img_size, settings, sfont, disp)
+        _draw_legend(display_size, img_size, tracker, settings, sfont, disp)
         _draw_thresholded_image(disp, img, thresholded, blitpos, stagevars)
         pygame.display.flip()
         tracker.settings = settings
@@ -258,12 +258,12 @@ def _capture_input():
     return None, None
 
 
-def _handle_threshold(settings, stagevars):
+def _handle_threshold(tracker, settings, stagevars):
     if stagevars[1]['thresholdchange'] is not None:
-        if stagevars[1]['thresholdchange'] == 'up' and settings['threshold'] < 255:
-            settings['threshold'] += 1
-        elif stagevars[1]['thresholdchange'] == 'down' and settings['threshold'] > 0:
-            settings['threshold'] -= 1
+        if stagevars[1]['thresholdchange'] == 'up' and tracker.threshold < 255:
+            tracker.threshold += 1
+        elif stagevars[1]['thresholdchange'] == 'down' and tracker.threshold > 0:
+            tracker.threshold -= 1
         stagevars[1]['thresholdchange'] = None
 
 
@@ -330,12 +330,12 @@ def _update_rectangle_size(stagevars, settings):
     settings['pupilrect'] = stagevars[2]['prect']
 
 
-def _draw_legend(display_size, img_size, settings, sfont, disp):
+def _draw_legend(display_size, img_size, tracker, settings, sfont, disp):
     starty = display_size[1] / 2 - img_size[1] / 2
     vtx = display_size[0] / 2 - img_size[0] / 2 - 10
     vals = [
         'pupil colour', str(st.PUPIL_COLOUR),
-        'threshold', str(settings['threshold']),
+        'threshold', str(tracker.threshold),
         'pupil position', str(settings['pupilpos']),
         'pupil rect', str(settings['pupilrect'])]
     for i in range(len(vals)):
