@@ -103,8 +103,12 @@ def _init_sounds():
 def _run_gui(snd, tracker, font, disp, kb_imgs):
     row, col = 0, -1
     intermediate = tracker.pupil_pos
-    pupilbounds = tracker.settings['pupilbounds']
-    blitpos = (pupilbounds[0] - 20, pupilbounds[1] - 20, pupilbounds[2] + 40, pupilbounds[3] + 40)
+    blitpos = (
+        tracker.detection_bounds[0] - 20,
+        tracker.detection_bounds[1] - 20,
+        tracker.detection_bounds[2] + 40,
+        tracker.detection_bounds[3] + 40
+    )
     pygame.mixer.music.load(snd[row][col])
     pygame.mixer.music.play()
     disp.blit(kb_imgs[row][col], (100, 250))
@@ -151,11 +155,13 @@ def _run_gui(snd, tracker, font, disp, kb_imgs):
                 disp.blit(surf, (110, 610))
                 cnt, sum_pupil_y = 0, 0
                 start = time()
-        img, thresholded, pupilsize, pupilbounds = tracker.give_me_all(pupilrect=True)
+        img, thresholded, pupilsize = tracker.give_me_all(pupilrect=True)
         sum_pupil_y += tracker.pupil_pos[1]
         cnt += 1
-        pygame.draw.line(img, (255, 0, 0), (intermediate[0] - 50, intermediate[1]), (intermediate[0] + 50, intermediate[1]))
-        pygame.draw.rect(img, (0, 255, 0), pupilbounds, 1)
+        pygame.draw.line(
+            img, (255, 0, 0), (intermediate[0] - 50, intermediate[1]),
+            (intermediate[0] + 50, intermediate[1]))
+        pygame.draw.rect(img, (0, 255, 0), tracker.detection_bounds, 1)
         pygame.draw.circle(img, (255, 0, 0), tracker.pupil_pos, 3, 0)
         crop = pygame.Surface((160, 320))
         crop.blit(img, (0, 0), blitpos)

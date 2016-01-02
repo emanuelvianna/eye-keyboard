@@ -10,6 +10,7 @@ class EyeTracker(object):  # PUPIL TRACKER
         self.camera = None
         self.threshold = st.DEFAULT_THRESHOLD
         self.pupil_pos = (-1, -1)
+        self.detection_bounds = [0, 0, 0, 0]
 
         self._init_camera(camera_size)
         self._init_camera_size_treating_os_compatibilities(camera_size)
@@ -17,7 +18,6 @@ class EyeTracker(object):  # PUPIL TRACKER
         self.settings = {
             'pupilrect': pygame.Rect(
                 self.camera_size[0] / 8 - 50, self.camera_size[1] / 8 - 25, 25, 12),
-            'pupilbounds': [0, 0, 0, 0]
         }
 
     def _init_camera(self, camera_size):
@@ -41,8 +41,8 @@ class EyeTracker(object):  # PUPIL TRACKER
         th = (self.threshold, self.threshold, self.threshold)
         pygame.transform.threshold(
             thresholded, snapshot, st.PUPIL_COLOUR, th, st.THRESHOLD_BACKGROUND_COLOUR, 1)
-        pupilsize, pupilbounds = self._find_pupil(thresholded, pupilrect)
-        return snapshot, thresholded, pupilsize, pupilbounds
+        pupilsize = self._find_pupil(thresholded, pupilrect)
+        return snapshot, thresholded, pupilsize
 
     def _find_pupil(self, thresholded, pupilrect=False):
         if pupilrect:
@@ -74,10 +74,10 @@ class EyeTracker(object):  # PUPIL TRACKER
         else:
             self.pupil_pos = pupilcenter
         try:
-            self.settings['pupilbounds'] = pupil.get_bounding_rects()[0]
+            self.detection_bounds = pupil.get_bounding_rects()[0]
             if pupilrect:
-                self.settings['pupilbounds'].left += ox
-                self.settings['pupilbounds'].top += oy
+                self.detection_bounds.left += ox
+                self.detection_bounds.top += oy
         except:
             pass
-        return pupil.count(), self.settings['pupilbounds']
+        return pupil.count()

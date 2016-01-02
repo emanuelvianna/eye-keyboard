@@ -174,7 +174,7 @@ def _run_gui(disp, btn, font, img, tracker, sfont, display_size, camera_size):
     while running:
         _draw_stage(disp, btn, font, display_size, camera_size, stage)
         pupilrect = stagevars[0]['use_prect'] and stage > 1
-        img, thresholded, pupilsize, pupilbounds = tracker.give_me_all(pupilrect)
+        img, thresholded, pupilsize = tracker.give_me_all(pupilrect)
         settings = tracker.settings
         _draw_threshold_button(disp, btn, stagevars)
         inp, inptype = _capture_input()
@@ -183,13 +183,14 @@ def _run_gui(disp, btn, font, img, tracker, sfont, display_size, camera_size):
             _handle_threshold(tracker, settings, stagevars)
         elif stage == 2:
             if inptype == 'mouseclick':
-                _place_rectangle_at_click_position(blitpos, img_size, stagevars, inp, tracker, settings)
+                _place_rectangle_at_click_position(
+                    blitpos, img_size, stagevars, inp, tracker, settings)
             elif stagevars[2]['vprectchange'] or stagevars[2]['hprectchange']:
                 _update_rectangle_size(stagevars, settings)
-            _draw_red_rectangle(img, settings['pupilrect'], thresholded)
+            _draw_red_rectangle(img, tracker, thresholded)
         elif stage == 3:
             _handle_threshold(tracker, settings, stagevars)
-            _draw_red_rectangle(img, pupilbounds, thresholded)
+            _draw_red_rectangle(img, tracker, thresholded)
             _draw_pupil_circle(img, thresholded, tracker)
             if stagevars[3]['confirmed']:
                 running = False
@@ -266,12 +267,12 @@ def _handle_threshold(tracker, settings, stagevars):
         stagevars[1]['thresholdchange'] = None
 
 
-def _draw_red_rectangle(img, pupilbounds, thresholded):
+def _draw_red_rectangle(img, tracker, thresholded):
     try:
-        pygame.draw.rect(img, (0, 255, 0), pupilbounds, 1)
-        pygame.draw.rect(thresholded, (0, 255, 0), pupilbounds, 1)
+        pygame.draw.rect(img, (0, 255, 0), tracker.detection_bounds, 1)
+        pygame.draw.rect(thresholded, (0, 255, 0), tracker.detection_bounds, 1)
     except:
-        print("pupilbounds=%s" % pupilbounds)
+        print("pupilbounds=%s" % tracker.detection_bounds)
 
 
 def _draw_pupil_circle(img, thresholded, tracker):
