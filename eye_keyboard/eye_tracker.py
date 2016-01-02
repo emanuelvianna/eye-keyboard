@@ -1,28 +1,18 @@
 import pygame
 import pygame.camera
 
+import settings as st
+
 
 class EyeTracker(object):
 
     def __init__(self, camera_size):
-        """
-        Creates a eye tracker controller.
+        self.camera = None
 
-        Parameters
-        ----------
-        camera_size: (int, int)
-            Camera camera_size height and width
-
-        Raises
-        ------
-        IOError
-            if not found an available camera
-        """
         self._init_camera(camera_size)
         self._init_camera_size_treating_os_compatibilities(camera_size)
 
         self.settings = {
-            'pupilcol': (0, 0, 0),
             'threshold': 45,
             'nonthresholdcol': (100, 100, 255, 255),
             'pupilpos': (-1, -1),
@@ -52,7 +42,7 @@ class EyeTracker(object):
         thresholded = pygame.surface.Surface(self.camera_size, 0, snapshot)
         th = (self.settings['threshold'], self.settings['threshold'], self.settings['threshold'])
         pygame.transform.threshold(
-            thresholded, snapshot, self.settings['pupilcol'], th, self.settings['nonthresholdcol'], 1)
+            thresholded, snapshot, st.PUPIL_COLOUR, th, self.settings['nonthresholdcol'], 1)
         pupilpos, pupilsize, pupilbounds = self._find_pupil(thresholded, pupilrect)
         return snapshot, thresholded, pupilpos, pupilsize, pupilbounds
 
@@ -70,7 +60,7 @@ class EyeTracker(object):
             thresholded = thresholded.subsurface(rectbounds)
             ox, oy = thresholded.get_offset()
         th = (self.settings['threshold'], self.settings['threshold'], self.settings['threshold'])
-        mask = pygame.mask.from_threshold(thresholded, self.settings['pupilcol'], th)
+        mask = pygame.mask.from_threshold(thresholded, st.PUPIL_COLOUR, th)
         pupil = mask.connected_component()
         pupilcenter = pupil.centroid()
         if pupilrect:

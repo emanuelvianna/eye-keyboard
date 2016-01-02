@@ -5,6 +5,7 @@ import pygame
 from collections import defaultdict
 
 from eye_tracker import EyeTracker
+import settings as st
 
 BACKGROUND_COLOUR = (0, 0, 0)
 FOREGROUND_COLOUR = (255, 255, 255)
@@ -333,7 +334,7 @@ def _draw_legend(display_size, img_size, settings, sfont, disp):
     starty = display_size[1] / 2 - img_size[1] / 2
     vtx = display_size[0] / 2 - img_size[0] / 2 - 10
     vals = [
-        'pupil colour', str(settings['pupilcol']),
+        'pupil colour', str(st.PUPIL_COLOUR),
         'threshold', str(settings['threshold']),
         'pupil position', str(settings['pupilpos']),
         'pupil rect', str(settings['pupilrect'])]
