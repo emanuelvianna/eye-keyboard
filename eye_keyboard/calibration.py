@@ -31,8 +31,7 @@ def calibrate(camera_size, display_size):
     font, sfont = _init_fonts()
     disp = _init_display(display_size)
     btn = _init_buttons(camera_size, display_size)
-    settings = tracker.settings
-    settings['pupilpos'] = (tracker.camera_size[0] / 2, tracker.camera_size[1] / 2)
+    tracker.pupil_pos = (tracker.camera_size[0] / 2, tracker.camera_size[1] / 2)
     _draw_stage(disp, btn, font, display_size, camera_size)
     pygame.mouse.set_visible(True)
     _run_gui(disp, btn, font, img, tracker, sfont, display_size, camera_size)
@@ -175,7 +174,7 @@ def _run_gui(disp, btn, font, img, tracker, sfont, display_size, camera_size):
     while running:
         _draw_stage(disp, btn, font, display_size, camera_size, stage)
         pupilrect = stagevars[0]['use_prect'] and stage > 1
-        img, thresholded, pupilpos, pupilsize, pupilbounds = tracker.give_me_all(pupilrect)
+        img, thresholded, pupilsize, pupilbounds = tracker.give_me_all(pupilrect)
         settings = tracker.settings
         _draw_threshold_button(disp, btn, stagevars)
         inp, inptype = _capture_input()
@@ -184,14 +183,14 @@ def _run_gui(disp, btn, font, img, tracker, sfont, display_size, camera_size):
             _handle_threshold(tracker, settings, stagevars)
         elif stage == 2:
             if inptype == 'mouseclick':
-                _place_rectangle_at_click_position(blitpos, img_size, stagevars, inp, settings)
+                _place_rectangle_at_click_position(blitpos, img_size, stagevars, inp, tracker, settings)
             elif stagevars[2]['vprectchange'] or stagevars[2]['hprectchange']:
                 _update_rectangle_size(stagevars, settings)
             _draw_red_rectangle(img, settings['pupilrect'], thresholded)
         elif stage == 3:
             _handle_threshold(tracker, settings, stagevars)
             _draw_red_rectangle(img, pupilbounds, thresholded)
-            _draw_pupil_circle(img, thresholded, pupilpos)
+            _draw_pupil_circle(img, thresholded, tracker)
             if stagevars[3]['confirmed']:
                 running = False
         _draw_legend(display_size, img_size, tracker, settings, sfont, disp)
@@ -275,12 +274,12 @@ def _draw_red_rectangle(img, pupilbounds, thresholded):
         print("pupilbounds=%s" % pupilbounds)
 
 
-def _draw_pupil_circle(img, thresholded, pupilpos):
+def _draw_pupil_circle(img, thresholded, tracker):
     try:
-        pygame.draw.circle(img, (255, 0, 0), pupilpos, 3, 0)
-        pygame.draw.circle(thresholded, (255, 0, 0), pupilpos, 3, 0)
+        pygame.draw.circle(img, (255, 0, 0), tracker.pupil_pos, 3, 0)
+        pygame.draw.circle(thresholded, (255, 0, 0), tracker.pupil_pos, 3, 0)
     except:
-        print("pupilpos=%s" % pupilpos)
+        print("pupilpos=%s" % tracker.pupil_pos)
 
 
 def _draw_thresholded_image(disp, img, thresholded, blitpos, stagevars):
@@ -290,14 +289,14 @@ def _draw_thresholded_image(disp, img, thresholded, blitpos, stagevars):
         disp.blit(img, blitpos)
 
 
-def _place_rectangle_at_click_position(blitpos, img_size, stagevars, inp, settings):
+def _place_rectangle_at_click_position(blitpos, img_size, stagevars, inp, tracker, settings):
     mouse_pos = pygame.mouse.get_pos()
     if (
         mouse_pos[0] > blitpos[0] and mouse_pos[0] < blitpos[0] + img_size[0] and
         mouse_pos[1] > blitpos[1] and mouse_pos[1] < blitpos[1] + img_size[1]
     ):
         stagevars[2]['clickpos'] = (inp[0] - blitpos[0], inp[1] - blitpos[1])
-        settings['pupilpos'] = stagevars[2]['clickpos'][:]
+        tracker.pupil_pos = stagevars[2]['clickpos'][:]
         x = stagevars[2]['clickpos'][0] - stagevars[2]['prectsize'][0] / 2
         y = stagevars[2]['clickpos'][1] - stagevars[2]['prectsize'][1] / 2
         stagevars[2]['prect'] = pygame.Rect(
@@ -336,7 +335,7 @@ def _draw_legend(display_size, img_size, tracker, settings, sfont, disp):
     vals = [
         'pupil colour', str(st.PUPIL_COLOUR),
         'threshold', str(tracker.threshold),
-        'pupil position', str(settings['pupilpos']),
+        'pupil position', str(tracker.pupil_pos),
         'pupil rect', str(settings['pupilrect'])]
     for i in range(len(vals)):
         tsize = sfont.size(vals[i])

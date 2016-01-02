@@ -4,18 +4,18 @@ import pygame.camera
 import settings as st
 
 
-class EyeTracker(object):
+class EyeTracker(object):  # PUPIL TRACKER
 
     def __init__(self, camera_size):
         self.camera = None
         self.threshold = st.DEFAULT_THRESHOLD
+        self.pupil_pos = (-1, -1)
 
         self._init_camera(camera_size)
         self._init_camera_size_treating_os_compatibilities(camera_size)
 
         self.settings = {
             'nonthresholdcol': (100, 100, 255, 255),
-            'pupilpos': (-1, -1),
             'pupilrect': pygame.Rect(
                 self.camera_size[0] / 8 - 50, self.camera_size[1] / 8 - 25, 25, 12),
             'pupilbounds': [0, 0, 0, 0],
@@ -43,8 +43,8 @@ class EyeTracker(object):
         th = (self.threshold, self.threshold, self.threshold)
         pygame.transform.threshold(
             thresholded, snapshot, st.PUPIL_COLOUR, th, self.settings['nonthresholdcol'], 1)
-        pupilpos, pupilsize, pupilbounds = self._find_pupil(thresholded, pupilrect)
-        return snapshot, thresholded, pupilpos, pupilsize, pupilbounds
+        pupilsize, pupilbounds = self._find_pupil(thresholded, pupilrect)
+        return snapshot, thresholded, pupilsize, pupilbounds
 
     def _find_pupil(self, thresholded, pupilrect=False):
         if pupilrect:
@@ -66,15 +66,15 @@ class EyeTracker(object):
         if pupilrect:
             pupilcenter = pupilcenter[0] + ox, pupilcenter[1] + oy
             if (self.settings['pupilrect'].left < pupilcenter[0] < self.settings['pupilrect'].right) and (self.settings['pupilrect'].top < pupilcenter[1] < self.settings['pupilrect'].bottom):
-                self.settings['pupilpos'] = pupilcenter
+                self.pupil_pos = pupilcenter
                 x = pupilcenter[0] - self.settings['pupilrect'][2] / 2
                 y = pupilcenter[1] - self.settings['pupilrect'][3] / 2
                 self.settings['pupilrect'] = pygame.Rect(
                     x, y, self.settings['pupilrect'][2], self.settings['pupilrect'][3])
             else:
-                self.settings['pupilpos'] = (-1, -1)
+                self.pupil_pos = (-1, -1)
         else:
-            self.settings['pupilpos'] = pupilcenter
+            self.pupil_pos = pupilcenter
         try:
             self.settings['pupilbounds'] = pupil.get_bounding_rects()[0]
             if pupilrect:
@@ -82,4 +82,4 @@ class EyeTracker(object):
                 self.settings['pupilbounds'].top += oy
         except:
             pass
-        return self.settings['pupilpos'], pupil.count(), self.settings['pupilbounds']
+        return pupil.count(), self.settings['pupilbounds']
