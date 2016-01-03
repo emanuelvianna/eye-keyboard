@@ -54,9 +54,9 @@ def _init_fonts():
 
 
 def _init_display(display_size):
-    # disp = pygame.display.set_mode(display_size, pygame.RESIZABLE)
-    disp = pygame.display.set_mode(display_size, pygame.FULLSCREEN |
-                                   pygame.HWSURFACE | pygame.DOUBLEBUF)
+    disp = pygame.display.set_mode(display_size, pygame.RESIZABLE)
+    # disp = pygame.display.set_mode(display_size, pygame.FULLSCREEN |
+    #                                pygame.HWSURFACE | pygame.DOUBLEBUF)
     disp.fill(BACKGROUND_COLOUR)
     return disp
 
@@ -164,7 +164,8 @@ def _run_gui(disp, btn, font, img, tracker, sfont, display_size, camera_size):
         stagevars[2]['clickpos'][0],
         stagevars[2]['clickpos'][1],
         stagevars[2]['prectsize'][0],
-        stagevars[2]['prectsize'][1])
+        stagevars[2]['prectsize'][1]
+    )
     stagevars[2]['vprectchange'] = None
     stagevars[2]['hprectchange'] = None
     stagevars[3]['confirmed'] = False
@@ -173,31 +174,29 @@ def _run_gui(disp, btn, font, img, tracker, sfont, display_size, camera_size):
     blitpos = (display_size[0] / 2 - img_size[0] / 2, display_size[1] / 2 - img_size[1] / 2)
     while running:
         _draw_stage(disp, btn, font, display_size, camera_size, stage)
-        pupilrect = stagevars[0]['use_prect'] and stage > 1
-        img, thresholded, pupilsize = tracker.give_me_all(pupilrect)
-        settings = tracker.settings
+        use_prect = stagevars[0]['use_prect'] and stage > 1
+        img, thresholded, pupilsize = tracker.give_me_all(use_prect)
         _draw_threshold_button(disp, btn, stagevars)
         inp, inptype = _capture_input()
         stage, stagevars = _handle_input(btn, inptype, inp, stage, stagevars)
         if stage == 1:
-            _handle_threshold(tracker, settings, stagevars)
+            _handle_threshold(tracker, stagevars)
         elif stage == 2:
             if inptype == 'mouseclick':
                 _place_rectangle_at_click_position(
-                    blitpos, img_size, stagevars, inp, tracker, settings)
+                    blitpos, img_size, stagevars, inp, tracker)
             elif stagevars[2]['vprectchange'] or stagevars[2]['hprectchange']:
-                _update_rectangle_size(stagevars, settings)
-            _draw_red_rectangle(img, tracker, thresholded)
+                _update_rectangle_size(stagevars, tracker)
+            _draw_green_rectangle(img, tracker, thresholded)
         elif stage == 3:
-            _handle_threshold(tracker, settings, stagevars)
-            _draw_red_rectangle(img, tracker, thresholded)
+            _handle_threshold(tracker, stagevars)
+            _draw_green_rectangle(img, tracker, thresholded)
             _draw_pupil_circle(img, thresholded, tracker)
             if stagevars[3]['confirmed']:
                 running = False
-        _draw_legend(display_size, img_size, tracker, settings, sfont, disp)
+        _draw_legend(display_size, img_size, tracker, sfont, disp)
         _draw_thresholded_image(disp, img, thresholded, blitpos, stagevars)
         pygame.display.flip()
-        tracker.settings = settings
     return tracker
 
 
@@ -258,7 +257,7 @@ def _capture_input():
     return None, None
 
 
-def _handle_threshold(tracker, settings, stagevars):
+def _handle_threshold(tracker, stagevars):
     if stagevars[1]['thresholdchange'] is not None:
         if stagevars[1]['thresholdchange'] == 'up' and tracker.threshold < 255:
             tracker.threshold += 1
@@ -267,12 +266,12 @@ def _handle_threshold(tracker, settings, stagevars):
         stagevars[1]['thresholdchange'] = None
 
 
-def _draw_red_rectangle(img, tracker, thresholded):
+def _draw_green_rectangle(img, tracker, thresholded):
     try:
-        pygame.draw.rect(img, (0, 255, 0), tracker.detection_bounds, 1)
-        pygame.draw.rect(thresholded, (0, 255, 0), tracker.detection_bounds, 1)
+        pygame.draw.rect(img, (0, 255, 0), tracker.pupil_rect, 1)
+        pygame.draw.rect(thresholded, (0, 255, 0), tracker.pupil_rect, 1)
     except:
-        print("pupilbounds=%s" % tracker.detection_bounds)
+        print("pupilbounds=%s" % tracker.pupil_rect)
 
 
 def _draw_pupil_circle(img, thresholded, tracker):
@@ -290,11 +289,11 @@ def _draw_thresholded_image(disp, img, thresholded, blitpos, stagevars):
         disp.blit(img, blitpos)
 
 
-def _place_rectangle_at_click_position(blitpos, img_size, stagevars, inp, tracker, settings):
-    mouse_pos = pygame.mouse.get_pos()
+def _place_rectangle_at_click_position(blitpos, img_size, stagevars, inp, tracker):
+    x, y = pygame.mouse.get_pos()
     if (
-        mouse_pos[0] > blitpos[0] and mouse_pos[0] < blitpos[0] + img_size[0] and
-        mouse_pos[1] > blitpos[1] and mouse_pos[1] < blitpos[1] + img_size[1]
+        x > blitpos[0] and x < blitpos[0] + img_size[0] and
+        y > blitpos[1] and y < blitpos[1] + img_size[1]
     ):
         stagevars[2]['clickpos'] = (inp[0] - blitpos[0], inp[1] - blitpos[1])
         tracker.pupil_pos = stagevars[2]['clickpos'][:]
@@ -302,11 +301,10 @@ def _place_rectangle_at_click_position(blitpos, img_size, stagevars, inp, tracke
         y = stagevars[2]['clickpos'][1] - stagevars[2]['prectsize'][1] / 2
         stagevars[2]['prect'] = pygame.Rect(
             x, y, stagevars[2]['prectsize'][0], stagevars[2]['prectsize'][1])
-        settings['pupilrect'] = stagevars[2]['prect']
+        tracker.pupil_rect = stagevars[2]['prect']
 
 
-def _update_rectangle_size(stagevars, settings):
-
+def _update_rectangle_size(stagevars, tracker):
     if stagevars[2]['vprectchange'] is not None:
         if stagevars[2]['vprectchange'] == 'up':
             stagevars[2]['prectsize'] = (stagevars[2]['prectsize'][0],
@@ -323,21 +321,21 @@ def _update_rectangle_size(stagevars, settings):
             stagevars[2]['prectsize'] = (stagevars[2]['prectsize'][0] - 1,
                                          stagevars[2]['prectsize'][1])
         stagevars[2]['hprectchange'] = None
-    x = settings['pupilrect'][0]
-    y = settings['pupilrect'][1]
+    x = tracker.pupil_rect[0]
+    y = tracker.pupil_rect[1]
     stagevars[2]['prect'] = pygame.Rect(
         x, y, stagevars[2]['prectsize'][0], stagevars[2]['prectsize'][1])
-    settings['pupilrect'] = stagevars[2]['prect']
+    tracker.pupil_rect = stagevars[2]['prect']
 
 
-def _draw_legend(display_size, img_size, tracker, settings, sfont, disp):
+def _draw_legend(display_size, img_size, tracker, sfont, disp):
     starty = display_size[1] / 2 - img_size[1] / 2
     vtx = display_size[0] / 2 - img_size[0] / 2 - 10
     vals = [
         'pupil colour', str(st.PUPIL_COLOUR),
         'threshold', str(tracker.threshold),
         'pupil position', str(tracker.pupil_pos),
-        'pupil rect', str(settings['pupilrect'])]
+        'pupil rect', str(tracker.pupil_rect)]
     for i in range(len(vals)):
         tsize = sfont.size(vals[i])
         tpos = vtx - tsize[0], starty + i * 20
