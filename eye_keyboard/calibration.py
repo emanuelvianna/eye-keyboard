@@ -20,9 +20,8 @@ BUTTON_WIDTH = 50
 
 def calibrate(camera_size, display_size):
     tracker = EyeTracker(camera_size)
-    setup.SCREEN.fill(BACKGROUND_COLOUR)
     btn = _init_buttons(camera_size, display_size)
-    tracker.pupil_pos = (tracker.camera_size[0] / 2, tracker.camera_size[1] / 2)
+    setup.SCREEN.fill(BACKGROUND_COLOUR)
     _draw_stage(btn, display_size, camera_size)
     _run_gui(btn, tracker, display_size, camera_size)
     return tracker

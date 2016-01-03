@@ -11,7 +11,10 @@ class EyeTracker(object):
         self.camera.start()
         self.camera_size = self._get_camera_size(camera_size)
         self.threshold = st.DEFAULT_THRESHOLD
-        self.pupil_pos = (-1, -1)
+        self.pupil_pos = (
+            camera_size[0] / 2,
+            camera_size[1] / 2
+        )
         self.pupil_rect = pg.Rect(
             self.camera_size[0] / 8 - 50,
             self.camera_size[1] / 8 - 25,
