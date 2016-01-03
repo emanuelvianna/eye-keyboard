@@ -20,12 +20,11 @@ BUTTON_WIDTH = 50
 
 def calibrate(camera_size, display_size):
     tracker = EyeTracker(camera_size)
-    img = pygame.surface.Surface(tracker.camera_size)
     setup.SCREEN.fill(BACKGROUND_COLOUR)
     btn = _init_buttons(camera_size, display_size)
     tracker.pupil_pos = (tracker.camera_size[0] / 2, tracker.camera_size[1] / 2)
     _draw_stage(btn, display_size, camera_size)
-    _run_gui(btn, img, tracker, display_size, camera_size)
+    _run_gui(btn, tracker, display_size, camera_size)
     return tracker
 
 
@@ -120,7 +119,7 @@ def _draw_buttons(btn, inactive_btn, active_btn):
         setup.SCREEN.blit(btn[bn]['active']['img'], btn[bn]['active']['pos'])
 
 
-def _run_gui(btn, img, tracker, display_size, camera_size):
+def _run_gui(btn, tracker, display_size, camera_size):
     stage = 1
     stagevars = defaultdict(lambda: {})
     stagevars[0]['show_threshimg'] = False
@@ -138,6 +137,7 @@ def _run_gui(btn, img, tracker, display_size, camera_size):
     stagevars[2]['hprectchange'] = None
     stagevars[3]['confirmed'] = False
     running = True
+    img = pygame.surface.Surface(tracker.camera_size)
     img_size = img.get_size()
     blitpos = (display_size[0] / 2 - img_size[0] / 2, display_size[1] / 2 - img_size[1] / 2)
     while running:
