@@ -5,6 +5,8 @@ import pygame
 from collections import defaultdict
 
 from eye_tracker import EyeTracker
+
+import setup
 import settings as st
 
 BACKGROUND_COLOUR = (0, 0, 0)
@@ -17,48 +19,14 @@ BUTTON_WIDTH = 50
 
 
 def calibrate(camera_size, display_size):
-    """
-    Calibrate an eye tracker.
-    Parameters
-    ----------
-    camera_size: (int, int)
-        camera resolution height and width
-    display_size: (int, int)
-        display resolution height and width
-    """
     tracker = EyeTracker(camera_size)
     img = pygame.surface.Surface(tracker.camera_size)
-    font, sfont = _init_fonts()
-    disp = _init_display(display_size)
+    setup.SCREEN.fill(BACKGROUND_COLOUR)
     btn = _init_buttons(camera_size, display_size)
     tracker.pupil_pos = (tracker.camera_size[0] / 2, tracker.camera_size[1] / 2)
-    _draw_stage(disp, btn, font, display_size, camera_size)
-    pygame.mouse.set_visible(True)
-    _run_gui(disp, btn, font, img, tracker, sfont, display_size, camera_size)
+    _draw_stage(btn, display_size, camera_size)
+    _run_gui(btn, img, tracker, display_size, camera_size)
     return tracker
-
-
-def _init_fonts():
-    pygame.font.init()
-    try:
-        fontname = os.path.join(
-            os.path.split(os.path.abspath(__file__))[0],
-            'resources',
-            'roboto_regular-webfont.ttf')
-    except:
-        fontname = pygame.font.get_default_font()
-        print "warning: could not find 'roboto_regular-webfont.ttf'"
-    font = pygame.font.Font(fontname, 24)
-    sfont = pygame.font.Font(fontname, 12)
-    return font, sfont
-
-
-def _init_display(display_size):
-    disp = pygame.display.set_mode(display_size, pygame.RESIZABLE)
-    # disp = pygame.display.set_mode(display_size, pygame.FULLSCREEN |
-    #                                pygame.HWSURFACE | pygame.DOUBLEBUF)
-    disp.fill(BACKGROUND_COLOUR)
-    return disp
 
 
 def _init_buttons(camera_size, display_size):
@@ -110,11 +78,11 @@ def _merge_button_data(btn_img, btn_pos):
     return btn
 
 
-def _draw_stage(disp, btn, font, display_size, camera_size, stage=None):
-    disp.fill(BACKGROUND_COLOUR)
+def _draw_stage(btn, display_size, camera_size, stage=None):
+    setup.SCREEN.fill(BACKGROUND_COLOUR)
     title, inactive_btn, active_btn = _get_stage_buttons_and_title(stage, btn)
-    _draw_buttons(disp, btn, inactive_btn, active_btn)
-    _draw_title(disp, font, title, display_size, camera_size)
+    _draw_buttons(btn, inactive_btn, active_btn)
+    _draw_title(title, display_size, camera_size)
 
 
 def _get_stage_buttons_and_title(stage, btn):
@@ -137,22 +105,22 @@ def _get_stage_buttons_and_title(stage, btn):
     return title, inactive_btn, active_btn
 
 
-def _draw_title(disp, font, title, display_size, camera_size):
-    title_size = font.size(title)
+def _draw_title(title, display_size, camera_size):
+    title_size = setup.LARGE_FONT.size(title)
     title_pos = (display_size[0] / 2 - title_size[0] / 2,
                  display_size[1] / 2 - (camera_size[1] / 2 + title_size[1]))
-    title_surf = font.render(title, True, FOREGROUND_COLOUR)
-    disp.blit(title_surf, title_pos)
+    title_surf = setup.LARGE_FONT.render(title, True, FOREGROUND_COLOUR)
+    setup.SCREEN.blit(title_surf, title_pos)
 
 
-def _draw_buttons(disp, btn, inactive_btn, active_btn):
+def _draw_buttons(btn, inactive_btn, active_btn):
     for bn in inactive_btn:
-        disp.blit(btn[bn]['inactive']['img'], btn[bn]['inactive']['pos'])
+        setup.SCREEN.blit(btn[bn]['inactive']['img'], btn[bn]['inactive']['pos'])
     for bn in active_btn:
-        disp.blit(btn[bn]['active']['img'], btn[bn]['active']['pos'])
+        setup.SCREEN.blit(btn[bn]['active']['img'], btn[bn]['active']['pos'])
 
 
-def _run_gui(disp, btn, font, img, tracker, sfont, display_size, camera_size):
+def _run_gui(btn, img, tracker, display_size, camera_size):
     stage = 1
     stagevars = defaultdict(lambda: {})
     stagevars[0]['show_threshimg'] = False
@@ -173,10 +141,10 @@ def _run_gui(disp, btn, font, img, tracker, sfont, display_size, camera_size):
     img_size = img.get_size()
     blitpos = (display_size[0] / 2 - img_size[0] / 2, display_size[1] / 2 - img_size[1] / 2)
     while running:
-        _draw_stage(disp, btn, font, display_size, camera_size, stage)
+        _draw_stage(btn, display_size, camera_size, stage)
         use_prect = stagevars[0]['use_prect'] and stage > 1
         img, thresholded = tracker.give_me_all(use_prect)
-        _draw_threshold_button(disp, btn, stagevars)
+        _draw_threshold_button(btn, stagevars)
         inp, inptype = _capture_input()
         stage, stagevars = _handle_input(btn, inptype, inp, stage, stagevars)
         if stage == 1:
@@ -194,8 +162,8 @@ def _run_gui(disp, btn, font, img, tracker, sfont, display_size, camera_size):
             _draw_pupil_circle(img, thresholded, tracker)
             if stagevars[3]['confirmed']:
                 running = False
-        _draw_legend(display_size, img_size, tracker, sfont, disp)
-        _draw_thresholded_image(disp, img, thresholded, blitpos, stagevars)
+        _draw_legend(display_size, img_size, tracker)
+        _draw_thresholded_image(img, thresholded, blitpos, stagevars)
         pygame.display.flip()
     return tracker
 
@@ -241,11 +209,11 @@ def _handle_input(btn, inptype, inp, stage, stagevars):
     return stage, stagevars
 
 
-def _draw_threshold_button(disp, btn, stagevars):
+def _draw_threshold_button(btn, stagevars):
     if stagevars[0]['show_threshimg']:
-        disp.blit(btn['t']['active']['img'], btn['t']['active']['pos'])
+        setup.SCREEN.blit(btn['t']['active']['img'], btn['t']['active']['pos'])
     else:
-        disp.blit(btn['t']['inactive']['img'], btn['t']['inactive']['pos'])
+        setup.SCREEN.blit(btn['t']['inactive']['img'], btn['t']['inactive']['pos'])
 
 
 def _capture_input():
@@ -282,11 +250,11 @@ def _draw_pupil_circle(img, thresholded, tracker):
         print("pupilpos=%s" % tracker.pupil_pos)
 
 
-def _draw_thresholded_image(disp, img, thresholded, blitpos, stagevars):
+def _draw_thresholded_image(img, thresholded, blitpos, stagevars):
     if stagevars[0]['show_threshimg']:
-        disp.blit(thresholded, blitpos)
+        setup.SCREEN.blit(thresholded, blitpos)
     else:
-        disp.blit(img, blitpos)
+        setup.SCREEN.blit(img, blitpos)
 
 
 def _place_rectangle_at_click_position(blitpos, img_size, stagevars, inp, tracker):
@@ -328,7 +296,7 @@ def _update_rectangle_size(stagevars, tracker):
     tracker.pupil_rect = stagevars[2]['prect']
 
 
-def _draw_legend(display_size, img_size, tracker, sfont, disp):
+def _draw_legend(display_size, img_size, tracker):
     starty = display_size[1] / 2 - img_size[1] / 2
     vtx = display_size[0] / 2 - img_size[0] / 2 - 10
     vals = [
@@ -337,7 +305,7 @@ def _draw_legend(display_size, img_size, tracker, sfont, disp):
         'pupil position', str(tracker.pupil_pos),
         'pupil rect', str(tracker.pupil_rect)]
     for i in range(len(vals)):
-        tsize = sfont.size(vals[i])
+        tsize = setup.SMALL_FONT.size(vals[i])
         tpos = vtx - tsize[0], starty + i * 20
-        tsurf = sfont.render(vals[i], True, FOREGROUND_COLOUR)
-        disp.blit(tsurf, tpos)
+        tsurf = setup.SMALL_FONT.render(vals[i], True, FOREGROUND_COLOUR)
+        setup.SCREEN.blit(tsurf, tpos)

@@ -1,4 +1,5 @@
 import pygame as pg
+import pygame.camera as pgc
 
 import settings as st
 
@@ -19,11 +20,11 @@ class EyeTracker(object):
         )
 
     def _get_camera(self, camera_size):
-        pg.camera.init()
-        cameras = pg.camera.list_cameras()
+        pgc.init()
+        cameras = pgc.list_cameras()
         if not cameras:
             raise IOError("no available cameras")
-        return pg.camera.Camera(cameras[0], camera_size, 'RGB')
+        return pgc.Camera(cameras[0], camera_size, 'RGB')
 
     def _get_camera_size(self, camera_size):
         try:
