@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 
 from calibration import calibrate
 from keyboard import launch_keyboard
+from eye_tracker import EyeTracker
 
 
 def parse_args():
@@ -21,7 +22,8 @@ def main():
     args = parse_args()
     camera_size = (args.camera_height, args.camera_width)
     display_size = (args.display_height, args.display_width)
-    tracker = calibrate(camera_size, display_size)
+    tracker = EyeTracker(camera_size)
+    calibrate(tracker, camera_size, display_size)
     launch_keyboard(tracker, display_size)
 
 

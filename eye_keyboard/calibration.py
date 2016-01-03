@@ -4,8 +4,6 @@ import pygame
 
 from collections import defaultdict
 
-from eye_tracker import EyeTracker
-
 import setup
 import settings as st
 
@@ -18,13 +16,9 @@ BUTTON_HEIGHT = 50
 BUTTON_WIDTH = 50
 
 
-def calibrate(camera_size, display_size):
-    tracker = EyeTracker(camera_size)
+def calibrate(tracker, camera_size, display_size):
     btn = _init_buttons(camera_size, display_size)
-    setup.SCREEN.fill(BACKGROUND_COLOUR)
-    _draw_stage(btn, display_size, camera_size)
     _run_gui(btn, tracker, display_size, camera_size)
-    return tracker
 
 
 def _init_buttons(camera_size, display_size):
