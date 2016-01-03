@@ -1,19 +1,11 @@
 import os.path
 
-import pygame
+import pygame as pg
 
 from collections import defaultdict
 
 import setup
 import settings as st
-
-BACKGROUND_COLOUR = (0, 0, 0)
-FOREGROUND_COLOUR = (255, 255, 255)
-
-BUTTON_NAMES = ['1', '2', '3', 'up', 'down', 't', 'space', 'escape']
-BUTTON_STATES = ['active', 'inactive']
-BUTTON_HEIGHT = 50
-BUTTON_WIDTH = 50
 
 
 def calibrate(tracker, camera_size, display_size):
@@ -33,8 +25,8 @@ def _load_button_images():
     if not os.path.exists(resdir):
         raise Exception("could not find 'resources' directory")
     btn_img = defaultdict(lambda: {})
-    for bn in BUTTON_NAMES:
-        for bs in BUTTON_STATES:
+    for bn in st.BUTTON_NAMES:
+        for bs in st.BUTTON_STATES:
             filename = "%s_%s.png" % (bn, bs)
             btn_img[bn][bs] = os.path.join(resdir, filename)
             if not os.path.isfile(btn_img[bn][bs]):
@@ -46,32 +38,32 @@ def _load_button_images():
 def _compute_button_positions(camera_height, camera_width, display_height, display_width):
     btn_pos = {}
     y = display_width / 2 + int(camera_width * 0.6)
-    btn_pos['1'] = int(display_height * (2 / 6.0) - BUTTON_HEIGHT / 2), y
-    btn_pos['2'] = int(display_height * (3 / 6.0) - BUTTON_HEIGHT / 2), y
-    btn_pos['3'] = int(display_height * (4 / 6.0) - BUTTON_HEIGHT / 2), y
-    btn_pos['space'] = int(display_height * (5 / 6.0) - BUTTON_HEIGHT / 2), y
-    leftx = display_height / 2 - (camera_height / 2 + BUTTON_HEIGHT)
-    rightx = display_height / 2 + camera_height / 2 + BUTTON_HEIGHT
-    btn_pos['up'] = rightx, display_width / 2 - BUTTON_WIDTH
-    btn_pos['down'] = rightx, display_width / 2 + BUTTON_WIDTH
-    btn_pos['t'] = leftx, display_width / 2 + camera_width / 2 - BUTTON_WIDTH / 2
-    btn_pos['escape'] = BUTTON_HEIGHT, BUTTON_WIDTH
+    btn_pos['1'] = int(display_height * (2 / 6.0) - st.BUTTON_HEIGHT / 2), y
+    btn_pos['2'] = int(display_height * (3 / 6.0) - st.BUTTON_HEIGHT / 2), y
+    btn_pos['3'] = int(display_height * (4 / 6.0) - st.BUTTON_HEIGHT / 2), y
+    btn_pos['space'] = int(display_height * (5 / 6.0) - st.BUTTON_HEIGHT / 2), y
+    leftx = display_height / 2 - (camera_height / 2 + st.BUTTON_HEIGHT)
+    rightx = display_height / 2 + camera_height / 2 + st.BUTTON_HEIGHT
+    btn_pos['up'] = rightx, display_width / 2 - st.BUTTON_WIDTH
+    btn_pos['down'] = rightx, display_width / 2 + st.BUTTON_WIDTH
+    btn_pos['t'] = leftx, display_width / 2 + camera_width / 2 - st.BUTTON_WIDTH / 2
+    btn_pos['escape'] = st.BUTTON_HEIGHT, st.BUTTON_WIDTH
     return btn_pos
 
 
 def _merge_button_data(btn_img, btn_pos):
     btn = defaultdict(lambda: defaultdict(lambda: {}))
     for bn in btn_img.keys():
-        btn_pos[bn] = btn_pos[bn][0] - BUTTON_HEIGHT / 2, btn_pos[bn][1] - BUTTON_WIDTH / 2
+        btn_pos[bn] = btn_pos[bn][0] - st.BUTTON_HEIGHT / 2, btn_pos[bn][1] - st.BUTTON_WIDTH / 2
         for bs in btn_img[bn].keys():
-            btn[bn][bs]['img'] = pygame.image.load(btn_img[bn][bs])
+            btn[bn][bs]['img'] = pg.image.load(btn_img[bn][bs])
             btn[bn][bs]['pos'] = btn_pos[bn]
-            btn[bn][bs]['rect'] = btn_pos[bn][0], btn_pos[bn][1], BUTTON_HEIGHT, BUTTON_WIDTH
+            btn[bn][bs]['rect'] = btn_pos[bn][0], btn_pos[bn][1], st.BUTTON_HEIGHT, st.BUTTON_WIDTH
     return btn
 
 
 def _draw_stage(btn, display_size, camera_size, stage=None):
-    setup.SCREEN.fill(BACKGROUND_COLOUR)
+    setup.SCREEN.fill(st.BACKGROUND_COLOUR)
     title, inactive_btn, active_btn = _get_stage_buttons_and_title(stage, btn)
     _draw_buttons(btn, inactive_btn, active_btn)
     _draw_title(title, display_size, camera_size)
@@ -101,7 +93,7 @@ def _draw_title(title, display_size, camera_size):
     title_size = setup.LARGE_FONT.size(title)
     title_pos = (display_size[0] / 2 - title_size[0] / 2,
                  display_size[1] / 2 - (camera_size[1] / 2 + title_size[1]))
-    title_surf = setup.LARGE_FONT.render(title, True, FOREGROUND_COLOUR)
+    title_surf = setup.LARGE_FONT.render(title, True, st.FOREGROUND_COLOUR)
     setup.SCREEN.blit(title_surf, title_pos)
 
 
@@ -120,7 +112,7 @@ def _run_gui(btn, tracker, display_size, camera_size):
     stagevars[1]['thresholdchange'] = None
     stagevars[2]['clickpos'] = 0, 0
     stagevars[2]['prectsize'] = 25, 12
-    stagevars[2]['prect'] = pygame.Rect(
+    stagevars[2]['prect'] = pg.Rect(
         stagevars[2]['clickpos'][0],
         stagevars[2]['clickpos'][1],
         stagevars[2]['prectsize'][0],
@@ -130,8 +122,7 @@ def _run_gui(btn, tracker, display_size, camera_size):
     stagevars[2]['hprectchange'] = None
     stagevars[3]['confirmed'] = False
     running = True
-    img = pygame.surface.Surface(tracker.camera_size)
-    img_size = img.get_size()
+    img_size = tracker.camera_size
     blitpos = (display_size[0] / 2 - img_size[0] / 2, display_size[1] / 2 - img_size[1] / 2)
     while running:
         _draw_stage(btn, display_size, camera_size, stage)
@@ -157,8 +148,7 @@ def _run_gui(btn, tracker, display_size, camera_size):
                 running = False
         _draw_legend(display_size, img_size, tracker)
         _draw_thresholded_image(img, thresholded, blitpos, stagevars)
-        pygame.display.flip()
-    return tracker
+        pg.display.flip()
 
 
 def _handle_input(btn, inptype, inp, stage, stagevars):
@@ -197,7 +187,7 @@ def _handle_input(btn, inptype, inp, stage, stagevars):
         else:
             stagevars[0]['use_prect'] = True
     if inp == 'escape':
-        pygame.display.quit()
+        pg.display.quit()
         raise Exception("camtracker.Setup: Escape was pressed")
     return stage, stagevars
 
@@ -210,11 +200,11 @@ def _draw_threshold_button(btn, stagevars):
 
 
 def _capture_input():
-    for event in pygame.event.get():
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            return pygame.mouse.get_pos(), 'mouseclick'
-        elif event.type == pygame.KEYDOWN:
-            return pygame.key.name(event.key), 'keypress'
+    for event in pg.event.get():
+        if event.type == pg.MOUSEBUTTONDOWN:
+            return pg.mouse.get_pos(), 'mouseclick'
+        elif event.type == pg.KEYDOWN:
+            return pg.key.name(event.key), 'keypress'
     return None, None
 
 
@@ -229,16 +219,16 @@ def _handle_threshold(tracker, stagevars):
 
 def _draw_green_rectangle(img, tracker, thresholded):
     try:
-        pygame.draw.rect(img, (0, 255, 0), tracker.pupil_rect, 1)
-        pygame.draw.rect(thresholded, (0, 255, 0), tracker.pupil_rect, 1)
+        pg.draw.rect(img, (0, 255, 0), tracker.pupil_rect, 1)
+        pg.draw.rect(thresholded, (0, 255, 0), tracker.pupil_rect, 1)
     except:
         print("pupilbounds=%s" % tracker.pupil_rect)
 
 
 def _draw_pupil_circle(img, thresholded, tracker):
     try:
-        pygame.draw.circle(img, (255, 0, 0), tracker.pupil_pos, 3, 0)
-        pygame.draw.circle(thresholded, (255, 0, 0), tracker.pupil_pos, 3, 0)
+        pg.draw.circle(img, (255, 0, 0), tracker.pupil_pos, 3, 0)
+        pg.draw.circle(thresholded, (255, 0, 0), tracker.pupil_pos, 3, 0)
     except:
         print("pupilpos=%s" % tracker.pupil_pos)
 
@@ -251,7 +241,7 @@ def _draw_thresholded_image(img, thresholded, blitpos, stagevars):
 
 
 def _place_rectangle_at_click_position(blitpos, img_size, stagevars, inp, tracker):
-    x, y = pygame.mouse.get_pos()
+    x, y = pg.mouse.get_pos()
     if (
         x > blitpos[0] and x < blitpos[0] + img_size[0] and
         y > blitpos[1] and y < blitpos[1] + img_size[1]
@@ -260,7 +250,7 @@ def _place_rectangle_at_click_position(blitpos, img_size, stagevars, inp, tracke
         tracker.pupil_pos = stagevars[2]['clickpos'][:]
         x = stagevars[2]['clickpos'][0] - stagevars[2]['prectsize'][0] / 2
         y = stagevars[2]['clickpos'][1] - stagevars[2]['prectsize'][1] / 2
-        stagevars[2]['prect'] = pygame.Rect(
+        stagevars[2]['prect'] = pg.Rect(
             x, y, stagevars[2]['prectsize'][0], stagevars[2]['prectsize'][1])
         tracker.pupil_rect = stagevars[2]['prect']
 
@@ -284,7 +274,7 @@ def _update_rectangle_size(stagevars, tracker):
         stagevars[2]['hprectchange'] = None
     x = tracker.pupil_rect[0]
     y = tracker.pupil_rect[1]
-    stagevars[2]['prect'] = pygame.Rect(
+    stagevars[2]['prect'] = pg.Rect(
         x, y, stagevars[2]['prectsize'][0], stagevars[2]['prectsize'][1])
     tracker.pupil_rect = stagevars[2]['prect']
 
@@ -300,5 +290,5 @@ def _draw_legend(display_size, img_size, tracker):
     for i in range(len(vals)):
         tsize = setup.SMALL_FONT.size(vals[i])
         tpos = vtx - tsize[0], starty + i * 20
-        tsurf = setup.SMALL_FONT.render(vals[i], True, FOREGROUND_COLOUR)
+        tsurf = setup.SMALL_FONT.render(vals[i], True, st.FOREGROUND_COLOUR)
         setup.SCREEN.blit(tsurf, tpos)
