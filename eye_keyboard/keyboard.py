@@ -155,7 +155,7 @@ def _run_gui(snd, tracker, font, disp, kb_imgs):
                 disp.blit(surf, (110, 610))
                 cnt, sum_pupil_y = 0, 0
                 start = time()
-        img, thresholded, pupilsize = tracker.give_me_all(use_prect=True)
+        img, thresholded = tracker.give_me_all(use_prect=True)
         sum_pupil_y += tracker.pupil_pos[1]
         cnt += 1
         pygame.draw.line(

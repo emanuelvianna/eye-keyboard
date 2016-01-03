@@ -175,7 +175,7 @@ def _run_gui(disp, btn, font, img, tracker, sfont, display_size, camera_size):
     while running:
         _draw_stage(disp, btn, font, display_size, camera_size, stage)
         use_prect = stagevars[0]['use_prect'] and stage > 1
-        img, thresholded, pupilsize = tracker.give_me_all(use_prect)
+        img, thresholded = tracker.give_me_all(use_prect)
         _draw_threshold_button(disp, btn, stagevars)
         inp, inptype = _capture_input()
         stage, stagevars = _handle_input(btn, inptype, inp, stage, stagevars)
