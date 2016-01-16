@@ -5,6 +5,7 @@ import pygame
 from os.path import join, split, abspath, exists
 from time import time
 from collections import defaultdict
+import settings as st
 
 BACKGROUND_COLOUR = (0, 0, 0)
 THINK_TIME = 2.0
@@ -25,23 +26,12 @@ LETTER = {
 }
 
 
+# TODO: add docstring
 def launch_keyboard(tracker, display_size):
-    """
-    Display a keyboard controlled by pupils.
-
-    Parameters
-    ----------
-    eye_tracker: EyeTracker
-        webcam eye tracker
-
-    Raises
-    ------
-    """
     disp = _init_display(display_size)
-    imgs = _init_images()
     snd = _init_sounds()
     font = _init_fonts()
-    _run_gui(snd, tracker, font, disp, imgs)
+    _run_gui(snd, tracker, font, disp)
 
 
 def _init_fonts():
@@ -60,28 +50,11 @@ def _init_fonts():
 
 
 def _init_display(display_size):
-    disp = pygame.display.set_mode(display_size, pygame.FULLSCREEN |
-                                   pygame.HWSURFACE | pygame.DOUBLEBUF)
-    # disp = pygame.display.set_mode(display_size, pygame.RESIZABLE)
+    # disp = pygame.display.set_mode(display_size, pygame.FULLSCREEN |
+    #                                pygame.HWSURFACE | pygame.DOUBLEBUF)
+    disp = pygame.display.set_mode(display_size, pygame.RESIZABLE)
     disp.fill(BACKGROUND_COLOUR)
     return disp
-
-
-def _init_images():
-    kb_imgs = defaultdict(lambda: {})
-    pygame.mixer.init()
-    resdir = join(split(abspath(__file__))[0], 'resources')
-    if not exists(resdir):
-        raise Exception("could not find 'resources' directory")
-    for row, cols in STATES.iteritems():
-        for col in cols:
-            if col == -1:
-                filename = "{0}.png".format(row)
-            else:
-                filename = "{0}_{1}.png".format(row, col)
-            filepath = join(resdir, filename)
-            kb_imgs[row][col] = pygame.image.load(filepath)
-    return kb_imgs
 
 
 def _init_sounds():
@@ -100,7 +73,39 @@ def _init_sounds():
     return snd
 
 
-def _run_gui(snd, tracker, font, disp, kb_imgs):
+# TODO: create a Keyboard component class
+def _update_keyboard(screen, row_idx, col_idx):
+    top = st.START_TOP
+    for i in xrange(NUM_ROWS):
+        left = st.START_LEFT
+        for j in xrange(NUM_COLS):
+            if i == row_idx:
+                if col_idx == -1 or j == col_idx:
+                    cell_colour = st.DARK_BLUE
+                    text_colour = st.WHITE
+                    line_colour = st.WHITE
+                else:
+                    cell_colour = st.WHITE
+                    text_colour = st.DARK_BLUE
+                    line_colour = st.DARK_BLUE
+            else:
+                cell_colour = st.WHITE
+                text_colour = st.DARK_BLUE
+                line_colour = st.DARK_BLUE
+            rect = pygame.Rect(left, top, st.WIDTH, st.HEIGHT)
+            pygame.draw.rect(screen, cell_colour, rect, st.FILL_RECT)
+            pygame.draw.rect(screen, line_colour, rect, st.LINE_WIDTH)
+            text = st.ROW_COL_TEXT[i][j]
+            font = pygame.font.Font(st.FONT_NAME, st.FONT_SIZE)
+            surf = font.render(text, True, text_colour)
+            font_width, font_height = font.size(text)
+            screen.blit(surf, (left + st.WIDTH / 2 - font_width / 2,
+                        top + st.HEIGHT / 2 - font_height / 2))
+            left += st.WIDTH
+        top += st.HEIGHT
+
+
+def _run_gui(snd, tracker, font, disp):
     row, col = 0, -1
     intermediate = tracker.pupil_pos
     blitpos = (
@@ -111,7 +116,7 @@ def _run_gui(snd, tracker, font, disp, kb_imgs):
     )
     pygame.mixer.music.load(snd[row][col])
     pygame.mixer.music.play()
-    disp.blit(kb_imgs[row][col], (100, 250))
+    _update_keyboard(disp, row, col)
     phrase = ""
     cnt, sum_pupil_y = 0, 0
     start = time()
@@ -142,7 +147,7 @@ def _run_gui(snd, tracker, font, disp, kb_imgs):
                     start_row = None
                     pygame.mixer.music.load(snd[row][col])
                     pygame.mixer.music.play()
-                    disp.blit(kb_imgs[row][col], (100, 250))
+                    _update_keyboard(disp, row, col)
                     surf = font.render(phrase, True, (255, 255, 255))
                     disp.blit(surf, (110, 610))
                     cnt, sum_pupil_y = 0, 0
@@ -150,7 +155,7 @@ def _run_gui(snd, tracker, font, disp, kb_imgs):
             else:
                 pygame.mixer.music.load(snd[row][col])
                 pygame.mixer.music.play()
-                disp.blit(kb_imgs[row][col], (100, 250))
+                _update_keyboard(disp, row, col)
                 surf = font.render(phrase, True, (255, 255, 255))
                 disp.blit(surf, (110, 610))
                 cnt, sum_pupil_y = 0, 0
@@ -168,7 +173,7 @@ def _run_gui(snd, tracker, font, disp, kb_imgs):
         scale = pygame.transform.scale(crop, (500, 1000))
         disp.blit(scale, (800, 50))
         if start_row is None:
-            disp.blit(kb_imgs[row][col], (100, 250))
+            _update_keyboard(disp, row, col)
         pygame.display.flip()
 
 
