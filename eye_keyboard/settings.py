@@ -29,7 +29,7 @@ ROW_COL_TEXT = [
     ['T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 ]
 START_LEFT = 250
-START_TOP = 100
+START_TOP = 200
 FILL_RECT = 0
 WIDTH = 100
 HEIGHT = 100
