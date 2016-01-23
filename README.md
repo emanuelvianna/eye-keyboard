@@ -1,4 +1,4 @@
-# webcam-eyekeyboard
+# eye-keyboard
 Extending webcam-eyetracker to use a keyboard with pupils
 
 ## Purpose
@@ -9,7 +9,7 @@ A family friend suffered a cerebral vascular accident which paralyzed her body m
 
 An assistant read the numbers of the rows and my family friend moves her eyes up (yes) or down (no) to signalize her row choice. Then they move to the letters, where the assistant read letter by letter until reach the desired letter. They repeat this process until complete the desired word and move forward to next one. 
 
-The idea of this software was to automate the assistant task. It relies on [webcam-eyetracker](https://github.com/esdalmaijer/webcam-eyetracker) an open source project that a calibrates a webcam to track the eye moviments. **webcam-eyekeyboard** use this calibrated webcam to enable users to type in a keyboard with their eyes.
+The idea of this software was to automate the assistant task. It relies on [webcam-eyetracker](https://github.com/esdalmaijer/webcam-eyetracker) an open source project that a calibrates a webcam to track the eye moviments. **eye-keyboard** use this calibrated webcam to enable users to type in a keyboard with their eyes.
 
 ## Example
 
