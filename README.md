@@ -1,5 +1,5 @@
 # webcam-eyekeyboard
-Extending webcam-eyetracker for use a keyboard with pupils
+Extending webcam-eyetracker to use a keyboard with pupils
 
 ## Purpose
 
