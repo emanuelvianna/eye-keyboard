@@ -15,8 +15,7 @@ from eye_keyboard.components.eye_preview import EyePreview
 
 class Control(object):
 
-    THINK_TIME = 3.0
-    CAPTURE_TIME = 2.5
+    THINK_TIME = 2.5
 
     def __init__(self, tracker):
         self.row_num = 0
@@ -26,7 +25,7 @@ class Control(object):
         self.num_frames = 0
         self.press_enter = False
         self.done = False
-        self.wait_time = self.CAPTURE_TIME
+        self.wait_time = self.THINK_TIME
         self.tracker = tracker
         self.eye_threshold = tracker.settings[st.PUPIL_POSITION][1]
         self.screen = self._init_screen()
@@ -45,6 +44,7 @@ class Control(object):
             self._wait_loop()
             if self.press_enter or self._move_eyes_upwards():
                 self._execute_choice()
+                self._wait_loop(capture=False)
             else:
                 self._move_table_forward()
 
@@ -54,19 +54,40 @@ class Control(object):
             file_name = '{}.wav'.format(self.row_num + 1)
             file_path = join(sound_dir, 'numbers', file_name)
         else:
-            letter = self.table.cells[self.row_num][self.col_num].label.lower()
-            if not letter or letter not in lowercase:
+            label = self.table.cells[self.row_num][self.col_num].label.lower()
+            if not label:
                 return
-            file_name = '{}.wav'.format(letter)
-            file_path = join(sound_dir, 'letters', file_name)
+            if label == 'voltar':
+                file_name = 'voltar.mp3'
+                file_path = join(sound_dir, file_name)
+            elif label == 'som':
+                file_name = 'som.mp3'
+                file_path = join(sound_dir, file_name)
+            elif label == 'sair':
+                file_name = 'sair.mp3'
+                file_path = join(sound_dir, file_name)
+            elif label == 'limpar':
+                file_name = 'limpar.mp3'
+                file_path = join(sound_dir, file_name)
+            elif label == 'ler':
+                file_name = 'ler.mp3'
+                file_path = join(sound_dir, file_name)
+            elif label == 'espaco':
+                file_name = 'espaco.mp3'
+                file_path = join(sound_dir, file_name)
+            elif label in lowercase:
+                file_name = '{}.mp3'.format(label)
+                file_path = join(sound_dir, 'letters', file_name)
+            else:
+                return
         pg.mixer.music.load(file_path)
         pg.mixer.music.play()
 
-    def _wait_loop(self):
+    def _wait_loop(self, capture=True):
         last_time = time()
         while (time() - last_time) < self.wait_time:
             self._update_table()
-            self._update_eye_preview()
+            self._update_eye_preview(capture)
             self._redraw_screen()
             self._event_loop()
 
@@ -78,10 +99,11 @@ class Control(object):
                     if self.col_num == -1 or col_num == self.col_num:
                         item.active = True
 
-    def _update_eye_preview(self):
+    def _update_eye_preview(self, capture):
         result = self.tracker.give_me_all(pupilrect=True)
-        self.sum_pupil_y += self.tracker.settings[st.PUPIL_POSITION][1]
-        self.num_frames += 1
+        if capture:
+            self.sum_pupil_y += self.tracker.settings[st.PUPIL_POSITION][1]
+            self.num_frames += 1
         self.eye_preview.update(
             snapshot=result[0],
             pupil_pos=self.tracker.settings[st.PUPIL_POSITION],
@@ -100,6 +122,7 @@ class Control(object):
             if event.type == pg.KEYDOWN:
                 if pg.key.name(event.key) == 'return':
                     self.press_enter = True
+                    print 'ENTER'
                 if pg.key.name(event.key) == 'escape':
                     self.done = True
 
@@ -107,6 +130,7 @@ class Control(object):
         avg_pupil_y = self.sum_pupil_y / self.num_frames
         self.sum_pupil_y = 0.0
         self.num_frames = 0
+        print avg_pupil_y, self.eye_threshold
         return avg_pupil_y <= self.eye_threshold
 
     def _move_table_forward(self):
@@ -117,7 +141,6 @@ class Control(object):
             if self.col_num == self.table.num_cols:
                 self.row_num = 0
                 self.col_num = -1
-        print self.row_num, self.col_num
 
     def _execute_choice(self):
         if self.col_num == -1:

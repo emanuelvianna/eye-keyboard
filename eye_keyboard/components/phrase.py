@@ -1,3 +1,5 @@
+# encoding: utf8
+
 import pygame as pg
 
 from hashlib import md5
@@ -32,6 +34,7 @@ class Phrase(object):
         file_path = join('/', 'tmp', file_name)
         with open(file_path, 'w') as f:
             params = st.VOCALWARE_PARAMS
+            self.text = 'espaço'
             params[st.VOCALWARE_TXT] = self.text
             checksum = md5(st.VOCALWARE_MD5_KEY.format(**params)).hexdigest()
             params[st.VOCALWARE_CHECKSUM] = checksum

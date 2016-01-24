@@ -1,3 +1,5 @@
+# encoding: utf8
+
 import pygame as pg
 
 from collections import defaultdict
@@ -62,11 +64,11 @@ class Table(object):
     SPACE = 'ESPACO'
 
     LABELS = [
-        ['A', 'B', 'C', 'D', 'E', 'F', ''],
+        ['A', 'B', 'C', 'D', 'E', 'F', SPACE],
         ['G', 'H', 'I', 'J', 'K', 'L', 'M'],
         ['N', 'O', 'P', 'Q', 'R', 'S', ''],
         ['T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
-        [SPACE, ERASE, CLEAN, READ, ALERT, QUIT, '']
+        [ERASE, CLEAN, READ, ALERT, QUIT, '', '']
     ]
 
     def __init__(self):
