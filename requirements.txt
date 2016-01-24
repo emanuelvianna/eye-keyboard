@@ -1,1 +1,2 @@
 pygame==1.9.1release
+requests==2.9.1
